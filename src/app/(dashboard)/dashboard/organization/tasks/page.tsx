@@ -11,7 +11,7 @@ export default function OrganizationTasksPage() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect() {
+  useEffect(() => {
     fetchTasks();
   }, []);
 
