@@ -1,0 +1,409 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==================== ENUMS ====================
+
+enum UserRole {
+  STUDENT
+  ORGANIZATION
+  ADMIN
+  UNIVERSITY
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+  DEACTIVATED
+}
+
+enum TaskStatus {
+  DRAFT
+  OPEN
+  IN_PROGRESS
+  SUBMITTED
+  UNDER_REVIEW
+  COMPLETED
+  CANCELLED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum PaymentStatus {
+  PENDING
+  HELD_IN_ESCROW
+  RELEASED
+  REFUNDED
+  FAILED
+}
+
+enum NotificationType {
+  TASK_POSTED
+  APPLICATION_RECEIVED
+  APPLICATION_ACCEPTED
+  APPLICATION_REJECTED
+  TASK_SUBMITTED
+  TASK_APPROVED
+  PAYMENT_RECEIVED
+  RATING_RECEIVED
+  SYSTEM_ALERT
+}
+
+// ==================== MODELS ====================
+
+model User {
+  id                String       @id @default(cuid())
+  email             String       @unique
+  emailVerified     DateTime?
+  passwordHash      String
+  role              UserRole
+  status            UserStatus   @default(PENDING_VERIFICATION)
+  
+  // Profile
+  firstName         String
+  lastName          String
+  phone             String?
+  avatarUrl         String?
+  bio               String?      @db.Text
+  
+  // Timestamps
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  lastLoginAt       DateTime?
+  
+  // Relations
+  student           Student?
+  organization      Organization?
+  admin             Admin?
+  notifications     Notification[]
+  sentRatings       Rating[]     @relation("RatingFrom")
+  receivedRatings   Rating[]     @relation("RatingTo")
+  
+  @@index([email])
+  @@index([role])
+}
+
+model Student {
+  id                String       @id @default(cuid())
+  userId            String       @unique
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Academic Info
+  schoolName        String
+  studentId         String?
+  major             String?
+  yearOfStudy       Int?
+  expectedGraduation DateTime?
+  
+  // Financial Info
+  tuitionFeeOutstanding Decimal? @db.Decimal(10, 2)
+  bankAccountName   String?
+  bankAccountNumber String?
+  bankName          String?
+  
+  // Skills & Portfolio
+  skills            StudentSkill[]
+  portfolioItems    PortfolioItem[]
+  
+  // Task Relations
+  applications      TaskApplication[]
+  submissions       TaskSubmission[]
+  
+  // Verification
+  isVerified        Boolean      @default(false)
+  verificationDocUrl String?
+  universityPartnerId String?
+  universityPartner UniversityPartner? @relation(fields: [universityPartnerId], references: [id])
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  @@index([userId])
+  @@index([universityPartnerId])
+}
+
+model StudentSkill {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  skillName   String
+  level       String   // Beginner, Intermediate, Advanced, Expert
+  yearsOfExperience Float?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([studentId])
+}
+
+model PortfolioItem {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String   @db.Text
+  url         String?
+  imageUrl    String?
+  fileUrl     String?
+  category    String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([studentId])
+}
+
+model Organization {
+  id                String       @id @default(cuid())
+  userId            String       @unique
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Organization Info
+  organizationName  String
+  organizationType  String       // NGO, Startup, Small Business
+  registrationNumber String?
+  website           String?
+  description       String       @db.Text
+  logo              String?
+  
+  // Contact
+  contactPerson     String
+  contactEmail      String
+  contactPhone      String
+  address           String?
+  
+  // Verification
+  isVerified        Boolean      @default(false)
+  verificationDocUrl String?
+  
+  // Relations
+  tasks             Task[]
+  payments          Payment[]
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  @@index([userId])
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  permissions String[] // Array of permission strings
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Task {
+  id                String       @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  
+  // Task Details
+  title             String
+  description       String       @db.Text
+  category          String
+  skillsRequired    String[]
+  
+  // Compensation
+  compensationAmount Decimal     @db.Decimal(10, 2)
+  compensationType  String       // Tuition, Stipend, Scholarship
+  
+  // Timeline
+  deadline          DateTime
+  estimatedDuration String?      // e.g., "2 weeks"
+  
+  // Status
+  status            TaskStatus   @default(DRAFT)
+  maxApplicants     Int?
+  
+  // Requirements
+  requirements      String       @db.Text
+  deliverables      String       @db.Text
+  attachmentUrls    String[]
+  
+  // Relations
+  applications      TaskApplication[]
+  submissions       TaskSubmission[]
+  payment           Payment?
+  
+  // Timestamps
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  publishedAt       DateTime?
+  completedAt       DateTime?
+  
+  @@index([organizationId])
+  @@index([status])
+  @@index([category])
+}
+
+model TaskApplication {
+  id          String            @id @default(cuid())
+  taskId      String
+  task        Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  studentId   String
+  student     Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  // Application Details
+  coverLetter String            @db.Text
+  proposedTimeline String?
+  status      ApplicationStatus @default(PENDING)
+  
+  // Timestamps
+  appliedAt   DateTime          @default(now())
+  reviewedAt  DateTime?
+  
+  @@unique([taskId, studentId])
+  @@index([taskId])
+  @@index([studentId])
+  @@index([status])
+}
+
+model TaskSubmission {
+  id              String   @id @default(cuid())
+  taskId          String   @unique
+  task            Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  studentId       String
+  student         Student  @relation(fields: [studentId], references: [id])
+  
+  // Submission Details
+  description     String   @db.Text
+  submissionUrls  String[]
+  
+  // Review
+  isApproved      Boolean?
+  reviewNotes     String?  @db.Text
+  reviewedAt      DateTime?
+  
+  // Timestamps
+  submittedAt     DateTime @default(now())
+  
+  @@index([taskId])
+  @@index([studentId])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  taskId            String        @unique
+  task              Task          @relation(fields: [taskId], references: [id])
+  organizationId    String
+  organization      Organization  @relation(fields: [organizationId], references: [id])
+  
+  // Payment Details
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("GHS")
+  status            PaymentStatus @default(PENDING)
+  
+  // Escrow
+  escrowHeldAt      DateTime?
+  escrowReleasedAt  DateTime?
+  
+  // Payment Gateway
+  paymentGateway    String?       // Stripe, Paystack
+  gatewayTransactionId String?
+  
+  // Disbursement
+  recipientAccount  String?       // School account or student account
+  recipientName     String?
+  disbursedAt       DateTime?
+  
+  // Timestamps
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  @@index([taskId])
+  @@index([organizationId])
+  @@index([status])
+}
+
+model Rating {
+  id          String   @id @default(cuid())
+  fromUserId  String
+  fromUser    User     @relation("RatingFrom", fields: [fromUserId], references: [id])
+  toUserId    String
+  toUser      User     @relation("RatingTo", fields: [toUserId], references: [id])
+  
+  // Rating Details
+  rating      Int      // 1-5 stars
+  review      String?  @db.Text
+  category    String[] // Professionalism, Quality, Communication, etc.
+  
+  // Context
+  taskId      String?  // Optional reference to task
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  
+  @@unique([fromUserId, toUserId, taskId])
+  @@index([toUserId])
+  @@index([fromUserId])
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Notification Details
+  type        NotificationType
+  title       String
+  message     String           @db.Text
+  link        String?
+  
+  // Status
+  isRead      Boolean          @default(false)
+  readAt      DateTime?
+  
+  // Timestamps
+  createdAt   DateTime         @default(now())
+  
+  @@index([userId])
+  @@index([isRead])
+}
+
+model UniversityPartner {
+  id              String    @id @default(cuid())
+  
+  // University Info
+  name            String
+  email           String    @unique
+  contactPerson   String
+  contactPhone    String?
+  address         String?
+  
+  // Integration
+  apiKey          String?   @unique
+  webhookUrl      String?
+  
+  // Relations
+  students        Student[]
+  
+  // Status
+  isActive        Boolean   @default(true)
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([email])
+}
+

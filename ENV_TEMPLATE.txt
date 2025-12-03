@@ -1,0 +1,52 @@
+# Copy this content to create your .env file
+# Instructions: Create a new file named .env in the root directory and paste this content
+
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/skillfundr"
+
+# Redis (Optional - for caching)
+REDIS_URL="redis://localhost:6379"
+
+# Authentication
+JWT_SECRET="your-super-secret-jwt-key-min-32-chars-change-this-in-production"
+ENCRYPTION_KEY="generate-a-64-char-hex-string-for-aes-256-encryption-security"
+
+# Next Auth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-nextauth-secret-change-in-production"
+
+# Payment Gateway (Choose one)
+# Option 1: Stripe
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_PUBLISHABLE_KEY="pk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+
+# Option 2: Paystack (Ghana-focused)
+PAYSTACK_SECRET_KEY="sk_test_..."
+PAYSTACK_PUBLIC_KEY="pk_test_..."
+
+# Email Service
+RESEND_API_KEY="re_..."
+EMAIL_FROM="noreply@skillfundr.com"
+
+# File Upload
+# Option 1: Uploadthing
+UPLOADTHING_SECRET="sk_..."
+UPLOADTHING_APP_ID="..."
+
+# Option 2: AWS S3
+AWS_ACCESS_KEY_ID="..."
+AWS_SECRET_ACCESS_KEY="..."
+AWS_REGION="us-east-1"
+AWS_S3_BUCKET="skillfundr-uploads"
+
+# Monitoring & Analytics (Optional but recommended)
+SENTRY_DSN="https://...@sentry.io/..."
+NEXT_PUBLIC_POSTHOG_KEY="phc_..."
+NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
+
+# Application
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NODE_ENV="development"
+
+

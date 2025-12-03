@@ -1,0 +1,103 @@
+🚀 SIMPLE INSTRUCTIONS TO GET RUNNING
+=====================================
+
+STEP 1: Fix Prisma Cache Issue
+-------------------------------
+sudo rm -rf ~/.cache/prisma
+(Enter your password when prompted)
+
+
+STEP 2: Generate Prisma Client
+-------------------------------
+cd /Users/davian/Desktop/MVP
+npx prisma generate
+
+
+STEP 3: Push Schema to Database
+--------------------------------
+npx prisma db push
+
+
+STEP 4: Create Test Accounts
+-----------------------------
+node setup-db.js
+
+
+STEP 5: Start the Application
+------------------------------
+npm run dev
+
+
+STEP 6: Open in Browser
+------------------------
+http://localhost:3000
+
+
+TEST ACCOUNTS (All use password: Test1234)
+==========================================
+
+👨‍💼 ADMIN:
+   admin@skillfundr.com
+
+👨‍🎓 STUDENTS:
+   john.student@example.com
+   sarah.student@example.com
+
+🏢 ORGANIZATIONS:
+   tech.ngo@example.com
+   startup@example.com
+
+
+THAT'S IT! 🎉
+=============
+
+Just run these 5 commands in order, then login with any account above!
+
+
+TROUBLESHOOTING
+===============
+
+If Step 2 or 3 fails with permission error:
+-------------------------------------------
+Try with sudo:
+  sudo npx prisma generate
+  sudo npx prisma db push
+
+Then continue with Step 4.
+
+
+If you see "MODULE_NOT_FOUND" in Step 4:
+-----------------------------------------
+Make sure Step 2 (prisma generate) completed successfully.
+Try running it again:
+  npx prisma generate
+  node setup-db.js
+
+
+VERIFICATION
+============
+
+To verify it worked:
+  npx prisma studio
+
+You should see:
+  - 5 users in the User table
+  - 4 tasks in the Task table
+  - Data in Student, Organization, etc.
+
+
+QUICK START AFTER SETUP
+========================
+
+1. Open http://localhost:3000
+2. Click "Login"
+3. Use: john.student@example.com / Test1234
+4. Click "Browse Tasks"
+5. You should see 4 tasks available!
+6. Click any task to view details and apply
+
+
+DONE! 🚀
+========
+
+
