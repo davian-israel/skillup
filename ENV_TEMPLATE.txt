@@ -1,21 +1,35 @@
 # Copy this content to create your .env file
 # Instructions: Create a new file named .env in the root directory and paste this content
 
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/skillfundr"
+# ==================== DATABASE ====================
+# For Vercel Postgres (recommended for Vercel deployment)
+# These are auto-populated when you connect Vercel Postgres in your Vercel dashboard
+POSTGRES_URL="postgres://..."
+POSTGRES_PRISMA_URL="postgres://...?pgbouncer=true&connect_timeout=15"
+POSTGRES_URL_NO_SSL="postgres://..."
+POSTGRES_URL_NON_POOLING="postgres://..."
+POSTGRES_USER="..."
+POSTGRES_HOST="..."
+POSTGRES_PASSWORD="..."
+POSTGRES_DATABASE="..."
 
-# Redis (Optional - for caching)
-REDIS_URL="redis://localhost:6379"
+# Prisma Database URLs (use these in your schema)
+DATABASE_URL="${POSTGRES_PRISMA_URL}"
+DATABASE_URL_UNPOOLED="${POSTGRES_URL_NON_POOLING}"
 
-# Authentication
+# For Local Development (use a local PostgreSQL or Neon/Supabase)
+# DATABASE_URL="postgresql://user:password@localhost:5432/skillfundr"
+# DATABASE_URL_UNPOOLED="postgresql://user:password@localhost:5432/skillfundr"
+
+# ==================== AUTHENTICATION ====================
 JWT_SECRET="your-super-secret-jwt-key-min-32-chars-change-this-in-production"
 ENCRYPTION_KEY="generate-a-64-char-hex-string-for-aes-256-encryption-security"
 
-# Next Auth
+# Next Auth (if using NextAuth.js)
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-nextauth-secret-change-in-production"
 
-# Payment Gateway (Choose one)
+# ==================== PAYMENT GATEWAY ====================
 # Option 1: Stripe
 STRIPE_SECRET_KEY="sk_test_..."
 STRIPE_PUBLISHABLE_KEY="pk_test_..."
@@ -25,11 +39,11 @@ STRIPE_WEBHOOK_SECRET="whsec_..."
 PAYSTACK_SECRET_KEY="sk_test_..."
 PAYSTACK_PUBLIC_KEY="pk_test_..."
 
-# Email Service
+# ==================== EMAIL SERVICE ====================
 RESEND_API_KEY="re_..."
 EMAIL_FROM="noreply@skillfundr.com"
 
-# File Upload
+# ==================== FILE UPLOAD ====================
 # Option 1: Uploadthing
 UPLOADTHING_SECRET="sk_..."
 UPLOADTHING_APP_ID="..."
@@ -40,13 +54,11 @@ AWS_SECRET_ACCESS_KEY="..."
 AWS_REGION="us-east-1"
 AWS_S3_BUCKET="skillfundr-uploads"
 
-# Monitoring & Analytics (Optional but recommended)
-SENTRY_DSN="https://...@sentry.io/..."
-NEXT_PUBLIC_POSTHOG_KEY="phc_..."
-NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
-
-# Application
+# ==================== APPLICATION ====================
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 NODE_ENV="development"
 
-
+# ==================== OPTIONAL: MONITORING ====================
+SENTRY_DSN="https://...@sentry.io/..."
+NEXT_PUBLIC_POSTHOG_KEY="phc_..."
+NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
