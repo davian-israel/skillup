@@ -398,17 +398,19 @@ export class TaskService {
         organizationId,
       },
       include: {
-        submission: true,
+        submissions: true,
       },
     });
 
-    if (!task || !task.submission) {
+    if (!task || !task.submissions || task.submissions.length === 0) {
       throw new Error('Task or submission not found');
     }
 
+    const submission = task.submissions[0];
+
     // Update submission
     await prisma.taskSubmission.update({
-      where: { id: task.submission.id },
+      where: { id: submission.id },
       data: {
         isApproved: true,
         reviewNotes,

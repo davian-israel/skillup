@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,11 +20,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    fetchTask();
-  }, [params.id]);
-
-  async function fetchTask() {
+  const fetchTask = useCallback(async () => {
     try {
       const response = await fetch(`/api/tasks/${params.id}`);
       const data = await response.json();
@@ -37,7 +33,11 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchTask();
+  }, [fetchTask]);
 
   async function handleApply(e: React.FormEvent) {
     e.preventDefault();
